@@ -5,6 +5,8 @@
         <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
         <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <!--Load the AJAX API-->
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
         <script>
             var db = new Dexie("Terms")
@@ -15,22 +17,61 @@
 
             async function save(trm, data) {
                 db.term.get({key:trm})
-                .then(e => {
-                    if (e == undefined && data)
+                .then(r => {
+                    if (r == undefined && data)
                         db.term.add({key:trm, data})
                 })
 
             }
 
-            async function get(trm) {
-                const data = await db.term
-                    .where('key')
-                    .equals(trm)
-                    .toArray()
-                if (data && data.length > 0)
-                    return data[0]
-                return null
+            // Load the Visualization API and the corechart package.
+            google.charts.load('current', {'packages':['corechart']})
+
+            function drawBarChart(raw_data, trm) {
+                var grades = [["Grade", "Frequency"]]
+                var letters = ["F","D","C","B","A"]
+                letters.forEach(l => {grades.push([l, parseInt(raw_data[l])])})
+
+                var data = google.visualization.arrayToDataTable(grades)
+                var view = new google.visualization.DataView(data)
+
+                view.setColumns([0, 1,
+                                { calc: "stringify",
+                                    sourceColumn: 1,
+                                    type: "string",
+                                    role: "annotation" }])
+
+                var options = {
+                    title: raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + " " + "Grade Distribution",
+                    width: 800,
+                    height: 400,
+                    bar: {groupWidth: "95%"},
+                    legend: { position: "none" },
+                }
+
+                var chart = new google.visualization.ColumnChart(document.getElementById("bar-chart"))
+                chart.draw(view, options);
+
+                // update headings
+                document.querySelector(".data-screen ul").removeAttribute("hidden")
+                var title = document.getElementById("class-title")
+                var prof = document.getElementById("professor")
+                var term = document.getElementById("class-term")
+                title.innerText = raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + ": " + raw_data["CRS TITLE"]
+                prof.innerText = "Primary Instructor: " + raw_data["Primary Instructor"]
+                console.log(trm)
+                console.log(trm.slice(0, 2))
+                console.log(trm.slice(-2))
+                if (trm.slice(0, 2) == "sp") {
+                    trm = "Spring 20" + trm.slice(-2)
+                } else if (trm.slice(0, 2) == "fa") {
+                    trm = "Fall 20" + trm.slice(-2)
+                } else if (trm.slice(0, 2) == "su") {
+                    trm = "Summer 20" + trm.slice(-2)
+                }
+                term.innerText = "Term: " + trm
             }
+
         </script>
         <style>
             body {
@@ -40,11 +81,27 @@
                 align-items: center;
                 display: flex;
                 justify-content: center;
-                height:40vh;
+                height:32vh;
             }
             .container li {
                 display: inline-block;
                 margin-left:2vh;
+            }
+
+            .data-screen {
+                align-items: center;
+                display: relative;
+                justify-content: center;
+                height:40vh;
+                font-family:sans-serif;
+                margin-top:5vh;
+                width:75%;
+                margin: 0 auto;
+            }
+
+            .data-screen li {
+                display: block;
+                margin-bottom:1vh;
             }
         </style>
     </head>
@@ -106,6 +163,14 @@
                     </li>
                 </ul>
             </div>
+            <div class="data-screen">
+                <ul id="info" hidden="true">
+                <li><h2 id="class-title"></h2></li>
+                <li><h3 id="professor"></h3></li>
+                <li><h3 id="class-term"></h3></li>
+                <li><div id="bar-chart"></div></li>
+                </ul>
+            </div>
         </main>
         <script>
             console.log(mdc)
@@ -116,10 +181,34 @@
 
             document.getElementById("search-btn").addEventListener("click", () => {
                 var trm = document.getElementById("term").value.toLowerCase()
-                var abbrev = document.getElementById("course-abbrev").value.toLowerCase()
-                var num = document.getElementById("course-num").value
+                var abbrev = document.getElementById("course-abbrev").value.toUpperCase()
+                var num = parseInt(document.getElementById("course-num").value)
 
                 /* validate inputs */
+                if (trm && !abbrev && !num) {
+
+                }
+
+                document.getElementById("info").setAttribute("hidden", "true")
+
+                function displayResults(r, trm) {
+                    // now we have access to the data
+                    data = r[Object.keys(r)[0]]
+                    if (!abbrev && !num) { // might not support this one use snackbar
+
+                    }
+                    else if (abbrev && !num) { // list department courses
+                        
+                    }
+                    else if (abbrev && num) { // if more than one, offer list, if only one, show graph
+                        if (data[abbrev][num] && data[abbrev][num].length == 1) {
+                            console.log(data[abbrev][num])
+                            drawBarChart(data[abbrev][num][0], trm)  
+                        } else {
+                            console.log("nope")
+                        }
+                    }
+                }
 
                 // search given these values
                 // I want to make it so you don't necessarily have to fill out every form
@@ -129,18 +218,19 @@
 
                 if (trm) {
                     db.term.get(trm)
-                    .then(e => {
-                        if (e == undefined) { // we want to cache this into indexedDB for future use
+                    .then(r => {
+                        if (r == undefined) { // we want to cache this into indexedDB for future use
                             fetch("http://kbonsol.tech/grades?" + trm)
                                 .then(resp => {
                                     return resp.json()
                                 })
                                 .then(json => {
                                     save(trm, json)
+                                    console.log("succ. saved")
+                                    displayResults(json, trm)
                                 })
-                            console.log("succ. saved")
                         } else { // it exists in indexedDB and we want to pull it up
-                            console.log(e)
+                            displayResults(r.data, trm)
                         }
                     })
                 }
