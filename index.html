@@ -2,34 +2,143 @@
 <html>
     <head>
         <title>UIC Grade Distributions</title>
-        <!-- Compiled and minified CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+        <script>
+            var db = new Dexie("Terms")
 
-        <!-- Compiled and minified JavaScript -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+            db.versions(1).stores({
+                term: 'key'
+            })
+
+            async function save(trm, data) {
+                db.term.get({term:trm})
+                .then(e => {
+                    if (e == undefined && data)
+                        db.term.add({term:trm, data})
+                })
+
+            }
+
+            async function get(trm) {
+                const data = await db.term
+                    .where('term')
+                    .equals(trm)
+                    .toArray()
+                if (data && data.length > 0)
+                    return data[0]
+                return null
+            }
+        </script>
+        <style>
+            body {
+                margin:0;
+            }
+            .container {
+                align-items: center;
+                display: flex;
+                justify-content: center;
+                height:40vh;
+            }
+            .container li {
+                display: inline-block;
+                margin-left:2vh;
+            }
+        </style>
     </head>
     <body>
-        <nav>
-            <div class="nav-wrapper">
-              <a href="#" class="brand-logo center" style="padding-right:2%;">UIC Grade Distribution</a>
-              <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li><a href="#">Search</a></li>
-                <li><a href="#">About</a></li>
-              </ul>
+        <header class="mdc-top-app-bar">
+            <div class="mdc-top-app-bar__row">
+                <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <span class="mdc-top-app-bar__title">UIC Grade Distribution App</span>
+                </section>
+                <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+                <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Favorite">favorite</button>
+                <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Search">search</button>
+                </section>
             </div>
-        </nav>
-        <div class="container">
-            <br><br><br/>
-            <div class="row">
-                <div class="input-field">
-                    <input placeholder="Placeholder" id="first_name" type="text" class="validate">
-                    <label for="first_name"></label>
-                </div>
-                <button class="btn waves-effect waves-light" type="submit" name="action">Search</button>
+        </header>
+        <main class="mdc-top-app-bar--fixed-adjust">
+        
+            <div class="container">
+                <ul>
+                    <li>
+                        <label class="mdc-text-field mdc-text-field--filled">
+                            <span class="mdc-text-field__ripple"></span>
+                            <span class="mdc-floating-label" id="my-label-id">Term</span>
+                            <input class="mdc-text-field__input" id="term" type="text" placeholder="SP09"
+                                aria-labelledby="my-label-id"
+                                aria-controls="my-helper-id"
+                                aria-describedby="my-helper-id">
+                            <span class="mdc-line-ripple"></span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="mdc-text-field mdc-text-field--filled">
+                            <span class="mdc-text-field__ripple"></span>
+                            <span class="mdc-floating-label" id="my-label-id">Course Abbreviation</span>
+                            <input class="mdc-text-field__input" id="course-abbrev" type="text" placeholder="CS"
+                                aria-labelledby="my-label-id"
+                                aria-controls="my-helper-id"
+                                aria-describedby="my-helper-id">
+                            <span class="mdc-line-ripple"></span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="mdc-text-field mdc-text-field--filled">
+                            <span class="mdc-text-field__ripple"></span>
+                            <span class="mdc-floating-label" id="my-label-id">Course Number</span>
+                            <input class="mdc-text-field__input" id="course-num" type="text" placeholder="420"
+                                aria-labelledby="my-label-id"
+                                aria-controls="my-helper-id"
+                                aria-describedby="my-helper-id">
+                            <span class="mdc-line-ripple"></span>
+                        </label>
+                    </li>
+                    <li>
+                        <button class="mdc-button mdc-button--raised mdc-button--leading" id="search-btn">
+                            <span class="mdc-button__ripple"></span>
+                            <i class="material-icons mdc-button__icon" aria-hidden="true">forward</i>
+                            <span class="mdc-button__label">Search Away!</span>
+                        </button>
+                    </li>
+                </ul>
             </div>
-        </div>
+        </main>
+        <script>
+            console.log(mdc)
+            document.querySelectorAll('.mdc-text-field').forEach(el => {
+                mdc.textField.MDCTextField.attachTo(el)
+            })
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'))
 
-        <!--JavaScript at end of body for optimized loading-->
-        <script type="text/javascript" src="js/materialize.min.js"></script>
+            document.getElementById("search-btn").addEventListener("click", () => {
+                var term = document.getElementById("term").value
+                var abbrev = document.getElementById("course-abbrev").value
+                var num = document.getElementById("course-num").value
+
+                /* validate inputs */
+
+                // search given these values
+                // I want to make it so you don't necessarily have to fill out every form
+                // make API calls to kbonsol.tech/grades?term
+                // I want to store terms into indexedDB for faster lookup and to
+                // reduce stress on my free heroku app lolol
+
+                if (term) {
+                    db.term.get()
+                }
+
+                fetch("http://kbonsol.tech/grades?" + term)
+                    .then(resp => {
+                        return resp.json()
+                    })
+                    .then(json => {
+                        console.log(json)
+                    })
+            })
+        </script>
     </body>
 </html>
