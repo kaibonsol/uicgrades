@@ -9,22 +9,22 @@
         <script>
             var db = new Dexie("Terms")
 
-            db.versions(1).stores({
+            db.version(1).stores({
                 term: 'key'
             })
 
             async function save(trm, data) {
-                db.term.get({term:trm})
+                db.term.get({key:trm})
                 .then(e => {
                     if (e == undefined && data)
-                        db.term.add({term:trm, data})
+                        db.term.add({key:trm, data})
                 })
 
             }
 
             async function get(trm) {
                 const data = await db.term
-                    .where('term')
+                    .where('key')
                     .equals(trm)
                     .toArray()
                 if (data && data.length > 0)
@@ -115,8 +115,8 @@
             mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'))
 
             document.getElementById("search-btn").addEventListener("click", () => {
-                var term = document.getElementById("term").value
-                var abbrev = document.getElementById("course-abbrev").value
+                var trm = document.getElementById("term").value.toLowerCase()
+                var abbrev = document.getElementById("course-abbrev").value.toLowerCase()
                 var num = document.getElementById("course-num").value
 
                 /* validate inputs */
@@ -127,17 +127,25 @@
                 // I want to store terms into indexedDB for faster lookup and to
                 // reduce stress on my free heroku app lolol
 
-                if (term) {
-                    db.term.get()
+                if (trm) {
+                    db.term.get(trm)
+                    .then(e => {
+                        if (e == undefined) { // we want to cache this into indexedDB for future use
+                            fetch("http://kbonsol.tech/grades?" + trm)
+                                .then(resp => {
+                                    return resp.json()
+                                })
+                                .then(json => {
+                                    save(trm, json)
+                                })
+                            console.log("succ. saved")
+                        } else { // it exists in indexedDB and we want to pull it up
+                            console.log(e)
+                        }
+                    })
                 }
 
-                fetch("http://kbonsol.tech/grades?" + term)
-                    .then(resp => {
-                        return resp.json()
-                    })
-                    .then(json => {
-                        console.log(json)
-                    })
+
             })
         </script>
     </body>
