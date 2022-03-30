@@ -28,18 +28,29 @@
             google.charts.load('current', {'packages':['corechart']})
 
             function drawBarChart(raw_data, trm) {
-                var grades = [["Grade", "Frequency"]]
+                var grades = [["Grade", "Frequency", {type:'string', role: 'tooltip'}]]
                 var letters = ["F","D","C","B","A"]
-                letters.forEach(l => {grades.push([l, parseInt(raw_data[l])])})
+                letters.forEach(l => {
+                    grades.push(
+                        [
+                            l, parseInt(raw_data[l]), 
+                            "Frequency: " + raw_data[l] + " (" +
+                            String(
+                                Math.round((parseFloat(raw_data[l]/raw_data["Grade Regs"])*100  + Number.EPSILON) * 100) / 100
+                            ) + "%)"
+                        ]
+                    )
+                })
 
                 var data = google.visualization.arrayToDataTable(grades)
                 var view = new google.visualization.DataView(data)
 
-                view.setColumns([0, 1,
-                                { calc: "stringify",
-                                    sourceColumn: 1,
-                                    type: "string",
-                                    role: "annotation" }])
+                view.setColumns([0,1,2])
+                // view.setColumns([0, 1,
+                //                 { calc: "stringify",
+                //                     sourceColumn: 1,
+                //                     type: "string",
+                //                     role: "annotation" }])
 
                 var options = {
                     title: raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + " " + "Grade Distribution",
@@ -49,6 +60,8 @@
                     legend: { position: "none" },
                 }
 
+                // TODO: I want to add it so that it calculates the proportion of each as a label when you hover
+
                 var chart = new google.visualization.ColumnChart(document.getElementById("bar-chart"))
                 chart.draw(view, options);
 
@@ -57,11 +70,11 @@
                 var title = document.getElementById("class-title")
                 var prof = document.getElementById("professor")
                 var term = document.getElementById("class-term")
+                var withdraws = document.getElementById("withdraws")
+                var regs = document.getElementById("regs")
+                var sats = document.getElementById("sats")
                 title.innerText = raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + ": " + raw_data["CRS TITLE"]
                 prof.innerText = "Primary Instructor: " + raw_data["Primary Instructor"]
-                console.log(trm)
-                console.log(trm.slice(0, 2))
-                console.log(trm.slice(-2))
                 if (trm.slice(0, 2) == "sp") {
                     trm = "Spring 20" + trm.slice(-2)
                 } else if (trm.slice(0, 2) == "fa") {
@@ -70,6 +83,9 @@
                     trm = "Summer 20" + trm.slice(-2)
                 }
                 term.innerText = "Term: " + trm
+                withdraws.innerText = "Withdraws: " + raw_data["W"]
+                regs.innerText = "Total Registered: " + raw_data["Grade Regs"]
+                sats.innerText = "Satisfactory/Unsatisfactory: " + raw_data["S"] + "/" + raw_data["U"]
             }
 
         </script>
@@ -92,7 +108,6 @@
                 align-items: center;
                 display: relative;
                 justify-content: center;
-                height:40vh;
                 font-family:sans-serif;
                 margin-top:5vh;
                 width:75%;
@@ -147,7 +162,7 @@
                         <label class="mdc-text-field mdc-text-field--filled">
                             <span class="mdc-text-field__ripple"></span>
                             <span class="mdc-floating-label" id="my-label-id">Course Number</span>
-                            <input class="mdc-text-field__input" id="course-num" type="text" placeholder="420"
+                            <input class="mdc-text-field__input" id="course-num" type="text" placeholder="301"
                                 aria-labelledby="my-label-id"
                                 aria-controls="my-helper-id"
                                 aria-describedby="my-helper-id">
@@ -169,35 +184,72 @@
                 <li><h3 id="professor"></h3></li>
                 <li><h3 id="class-term"></h3></li>
                 <li><div id="bar-chart"></div></li>
+                <li><h4 id="withdraws"></h4></li>
+                <li><h4 id="regs"></h4></li>
+                <li><h4 id="sats"></h4></li>
                 </ul>
             </div>
         </main>
+        <aside class="mdc-snackbar">
+            <div class="mdc-snackbar__surface" role="status" aria-relevant="additions">
+              <div class="mdc-snackbar__label" aria-atomic="false">
+                
+              </div>
+            </div>
+          </aside>
         <script>
+            /* initialize MDC components */
             console.log(mdc)
             document.querySelectorAll('.mdc-text-field').forEach(el => {
                 mdc.textField.MDCTextField.attachTo(el)
             })
             mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'))
+            var snackbar = mdc.snackbar.MDCSnackbar.attachTo(document.querySelector('.mdc-snackbar'))
 
+            /* query logic */
             document.getElementById("search-btn").addEventListener("click", () => {
                 var trm = document.getElementById("term").value.toLowerCase()
                 var abbrev = document.getElementById("course-abbrev").value.toUpperCase()
-                var num = parseInt(document.getElementById("course-num").value)
+                var num = document.getElementById("course-num").value
 
                 /* validate inputs */
-                if (trm && !abbrev && !num) {
-
+                if (!trm) {
+                    snackbar.labelText = "Error: You must enter a term."
+                    snackbar.open()
+                    return;
                 }
+                if (!abbrev) {
+                    snackbar.labelText = "Error: You must enter a course abbreviation."
+                    snackbar.open()
+                    return;
+                }
+                var season = trm.slice(0, 2)
+                var year = trm.slice(-2)
+                if (trm.length != 4 || 
+                    (season != "sp" && season != "fa" && season != "su") ||
+                    (isNaN(year))) {
+                    snackbar.labelText = "Error: Term must be SP/FA/SU + 2 digit number, like SP09 for Spring 2009."
+                    snackbar.open()
+                    return;
+                }
+                if (/\d/.test(abbrev) || abbrev.length > 5) {
+                    snackbar.labelText = "Error: Must enter abbreviation, like CS for Computer Science."
+                    snackbar.open()
+                    return;
+                }
+                if (num.length != 3 || isNaN(num) || num > 700 || num <= 0) {
+                    snackbar.labelText = "Error: Course Number must be a valid 3 digit number, like 342."
+                    snackbar.open()
+                    return;
+                }
+                
 
                 document.getElementById("info").setAttribute("hidden", "true")
 
                 function displayResults(r, trm) {
                     // now we have access to the data
                     data = r[Object.keys(r)[0]]
-                    if (!abbrev && !num) { // might not support this one use snackbar
-
-                    }
-                    else if (abbrev && !num) { // list department courses
+                    if (abbrev && !num) { // list department courses
                         
                     }
                     else if (abbrev && num) { // if more than one, offer list, if only one, show graph
@@ -220,7 +272,7 @@
                     db.term.get(trm)
                     .then(r => {
                         if (r == undefined) { // we want to cache this into indexedDB for future use
-                            fetch("http://kbonsol.tech/grades?" + trm)
+                            fetch("https://kbonsol.herokuapp.com/grades?" + trm)
                                 .then(resp => {
                                     return resp.json()
                                 })
