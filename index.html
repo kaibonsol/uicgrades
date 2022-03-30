@@ -373,6 +373,17 @@
                     // now we have access to the data
                     data = r[Object.keys(r)[0]]
 
+                    if (!data[abbrev]) {
+                        snackbar.labelText = "Error: Could not find subject abbreviation."
+                        snackbar.open()
+                        return
+                    }
+                    if(num && !data[abbrev][num]) {
+                        snackbar.labelText = "Error: Could not find course."
+                        snackbar.open()
+                        return
+                    }
+
                     var createListItemHTML = (clss, id) => {
                                 return ""+
                                     "<li class='mdc-list-item' id='"+id+" "+clss["CRS NBR"]+"''>"+
