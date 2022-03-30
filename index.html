@@ -49,14 +49,24 @@
 
                 view.setColumns([0,1,2])
 
-                var options = {
-                    title: raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + " " + "Grade Distribution",
-                    width: 800,
-                    height: 400,
-                    bar: {groupWidth: "95%"},
-                    legend: { position: "none" },
+                //console.log(window.innerWidth)
+                if (window.innerWidth <= 650) {
+                    var w = 400
+                    var h = 500
+                } else if (window.innerWidth <= 960) {
+                    var w = 600
+                    var h = 450
+                } else {
+                    var w = 800
+                    var h = 500
                 }
-
+                var options = {
+                        title: raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + " " + "Grade Distribution",
+                        width: w,
+                        height: h,
+                        bar: {groupWidth: "95%"},
+                        legend: { position: "none" },
+                }
                 // TODO: I want to add it so that it calculates the proportion of each as a label when you hover
 
                 var chart = new google.visualization.ColumnChart(document.getElementById("bar-chart"))
@@ -110,6 +120,12 @@
             body {
                 margin:0;
             }
+
+            html, body {
+                height:100%;
+                width:100%;
+            }
+
             .container {
                 align-items: center;
                 display: flex;
@@ -259,7 +275,7 @@
                         <li><h3 id="professor"></h3></li>
                         <li><h3 id="class-term"></h3></li>
                     </div>
-                    <li><div id="bar-chart"></div></li>
+                    <li><div style="width:100%;height:100%;" id="bar-chart"></div></li>
                     <div style="padding:16px;" class="mdc-card mdc-card--outlined">
                         <li><h4 id="withdraws"></h4></li>
                         <li><h4 id="regs"></h4></li>
