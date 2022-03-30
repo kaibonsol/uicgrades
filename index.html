@@ -74,17 +74,23 @@
                 prof.innerText = "Primary Instructor: " + raw_data["Primary Instructor"] + " "
 
                 instructor = raw_data["Primary Instructor"]
-                if (instructor.indexOf(" ") < instructor.indexOf(",")) {
-                    lname = instructor.slice(0, instructor.indexOf(" "))
-                } else {
-                    lname = instructor.slice(0, instructor.indexOf(","))
+                if (instructor != "Grad Asst") {
+                    if (instructor.indexOf(" ") < instructor.indexOf(",")) {
+                        lname = instructor.slice(0, instructor.indexOf(" "))
+                    } else {
+                        lname = instructor.slice(0, instructor.indexOf(","))
+                    }
+                    instructor = instructor.slice(instructor.indexOf(",")+2, instructor.length)
+
+                    if (instructor.indexOf(" ") == -1) {
+                        fname = instructor.slice(0)
+                    } else {
+                        fname = instructor.slice(0, instructor.indexOf(" "))
+                    }
+                    
+                    ratemyprofessor = "https://www.ratemyprofessors.com/search/teachers?query=" + fname + "%20" + lname + "&sid=U2Nob29sLTExMTE="
+                    prof.innerHTML += "(<a target='_blank' href='"+ratemyprofessor+"'>RateMyProfessor</a>)"
                 }
-                instructor = instructor.slice(instructor.indexOf(",")+2, instructor.length)
-                fname = instructor.slice(0, instructor.indexOf(" "))
-
-                ratemyprofessor = "https://www.ratemyprofessors.com/search/teachers?query=" + fname + "%20" + lname
-                prof.innerHTML += "(<a target='_blank' href='"+ratemyprofessor+"'>RateMyProfessor</a>)"
-
                 if (trm.slice(0, 2) == "sp") {
                     trm = "Spring 20" + trm.slice(-2)
                 } else if (trm.slice(0, 2) == "fa") {
