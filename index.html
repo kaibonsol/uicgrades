@@ -97,11 +97,7 @@
                 align-items: center;
                 display: flex;
                 justify-content: center;
-                height:32vh;
-            }
-            .container li {
-                display: inline-block;
-                margin-left:2vh;
+                height:60vh;
             }
 
             .data-screen {
@@ -135,8 +131,10 @@
         <main class="mdc-top-app-bar--fixed-adjust">
         
             <div class="container">
-                <ul>
-                    <li>
+                <div class="mdc-layout-grid">
+                    <div class="mdc-layout-grid__inner">
+                      <div class="mdc-layout-grid__cell">
+
                         <label class="mdc-text-field mdc-text-field--filled">
                             <span class="mdc-text-field__ripple"></span>
                             <span class="mdc-floating-label" id="my-label-id">Term</span>
@@ -146,8 +144,10 @@
                                 aria-describedby="my-helper-id">
                             <span class="mdc-line-ripple"></span>
                         </label>
-                    </li>
-                    <li>
+
+                      </div>
+                      <div class="mdc-layout-grid__cell">
+
                         <label class="mdc-text-field mdc-text-field--filled">
                             <span class="mdc-text-field__ripple"></span>
                             <span class="mdc-floating-label" id="my-label-id">Course Abbreviation</span>
@@ -157,8 +157,10 @@
                                 aria-describedby="my-helper-id">
                             <span class="mdc-line-ripple"></span>
                         </label>
-                    </li>
-                    <li>
+
+                      </div>
+                      <div class="mdc-layout-grid__cell">
+
                         <label class="mdc-text-field mdc-text-field--filled">
                             <span class="mdc-text-field__ripple"></span>
                             <span class="mdc-floating-label" id="my-label-id">Course Number</span>
@@ -168,15 +170,24 @@
                                 aria-describedby="my-helper-id">
                             <span class="mdc-line-ripple"></span>
                         </label>
-                    </li>
-                    <li>
+
+                      </div>
+                      <div class="mdc-layout-grid__cell">
+
                         <button class="mdc-button mdc-button--raised mdc-button--leading" id="search-btn">
                             <span class="mdc-button__ripple"></span>
                             <i class="material-icons mdc-button__icon" aria-hidden="true">forward</i>
                             <span class="mdc-button__label">Search Away!</span>
                         </button>
-                    </li>
-                </ul>
+
+                      </div>
+                    </div>
+                  </div>
+
+
+
+
+
             </div>
             <div class="data-screen">
                 <ul id="info" hidden="true">
