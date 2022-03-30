@@ -28,6 +28,7 @@
             google.charts.load('current', {'packages':['corechart']})
 
             function drawBarChart(raw_data, trm) {
+                console.log(raw_data)
                 var grades = [["Grade", "Frequency", {type:'string', role: 'tooltip'}]]
                 var letters = ["F","D","C","B","A"]
                 letters.forEach(l => {
@@ -46,11 +47,6 @@
                 var view = new google.visualization.DataView(data)
 
                 view.setColumns([0,1,2])
-                // view.setColumns([0, 1,
-                //                 { calc: "stringify",
-                //                     sourceColumn: 1,
-                //                     type: "string",
-                //                     role: "annotation" }])
 
                 var options = {
                     title: raw_data["CRS SUBJ CD"] + raw_data["CRS NBR"] + " " + "Grade Distribution",
@@ -67,6 +63,7 @@
 
                 // update headings
                 document.querySelector(".data-screen ul").removeAttribute("hidden")
+                document.getElementById("info").removeAttribute("hidden")
                 var title = document.getElementById("class-title")
                 var prof = document.getElementById("professor")
                 var term = document.getElementById("class-term")
@@ -97,7 +94,6 @@
                 align-items: center;
                 display: flex;
                 justify-content: center;
-                height:60vh;
             }
 
             .data-screen {
@@ -107,6 +103,10 @@
                 font-family:sans-serif;
                 margin-top:5vh;
                 width:75%;
+                margin: 0 auto;
+            }
+
+            .mdc-circular-progress {
                 margin: 0 auto;
             }
 
@@ -123,13 +123,23 @@
                 <span class="mdc-top-app-bar__title">UIC Grade Distribution App</span>
                 </section>
                 <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-                <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Favorite">favorite</button>
-                <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Search">search</button>
+                    <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Favorite" id="love">favorite</button>
                 </section>
             </div>
         </header>
         <main class="mdc-top-app-bar--fixed-adjust">
         
+            <div style="margin-top:5%;margin-bottom:5%;" class="data-screen">
+                <div style="padding:16px;" class="mdc-card mdc-card--outlined">
+                    <!-- ... content ... -->
+                    <h3>Enter a term and subject abbreviation, like SP12 CS for Spring 2012 Computer Science.<h3>
+                        <h3>If you don't enter a course number, you will be given a list of classes in that subject;
+                            otherwise, you will be given the grade distributions of that class if it exists.
+                        </h3>
+                  </div>
+
+            </div>
+
             <div class="container">
                 <div class="mdc-layout-grid">
                     <div class="mdc-layout-grid__inner">
@@ -150,7 +160,7 @@
 
                         <label class="mdc-text-field mdc-text-field--filled">
                             <span class="mdc-text-field__ripple"></span>
-                            <span class="mdc-floating-label" id="my-label-id">Course Abbreviation</span>
+                            <span class="mdc-floating-label" id="my-label-id">Subject Abbreviation</span>
                             <input class="mdc-text-field__input" id="course-abbrev" type="text" placeholder="CS"
                                 aria-labelledby="my-label-id"
                                 aria-controls="my-helper-id"
@@ -183,24 +193,76 @@
                       </div>
                     </div>
                   </div>
-
-
-
-
-
             </div>
+
+            <img id="kai" style="display:none;" src="2.jpg"></img>
+
             <div class="data-screen">
+
+                <div style="padding:16px;display:none;" class="mdc-card mdc-card--outlined" id="multiple-classes">
+                    <li><h3>Select one of the following classes</h3></li>
+                </div>
+                <ul class="mdc-list mdc-list--two-line">
+                </ul>
+
+                <div class="mdc-circular-progress" style="width:48px;height:48px;" role="progressbar" aria-label="Example Progress Bar" aria-valuemin="0" aria-valuemax="1">
+                    <div class="mdc-circular-progress__determinate-container">
+                      <svg class="mdc-circular-progress__determinate-circle-graphic" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="mdc-circular-progress__determinate-track" cx="24" cy="24" r="18" stroke-width="4"/>
+                        <circle class="mdc-circular-progress__determinate-circle" cx="24" cy="24" r="18" stroke-dasharray="113.097" stroke-dashoffset="113.097" stroke-width="4"/>
+                      </svg>
+                    </div>
+                    <div class="mdc-circular-progress__indeterminate-container">
+                      <div class="mdc-circular-progress__spinner-layer">
+                        <div class="mdc-circular-progress__circle-clipper mdc-circular-progress__circle-left">
+                          <svg class="mdc-circular-progress__indeterminate-circle-graphic" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="18" stroke-dasharray="113.097" stroke-dashoffset="56.549" stroke-width="4"/>
+                          </svg>
+                        </div>
+                        <div class="mdc-circular-progress__gap-patch">
+                          <svg class="mdc-circular-progress__indeterminate-circle-graphic" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="18" stroke-dasharray="113.097" stroke-dashoffset="56.549" stroke-width="3.2"/>
+                          </svg>
+                        </div>
+                        <div class="mdc-circular-progress__circle-clipper mdc-circular-progress__circle-right">
+                          <svg class="mdc-circular-progress__indeterminate-circle-graphic" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="18" stroke-dasharray="113.097" stroke-dashoffset="56.549" stroke-width="4"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                
                 <ul id="info" hidden="true">
-                <li><h2 id="class-title"></h2></li>
-                <li><h3 id="professor"></h3></li>
-                <li><h3 id="class-term"></h3></li>
-                <li><div id="bar-chart"></div></li>
-                <li><h4 id="withdraws"></h4></li>
-                <li><h4 id="regs"></h4></li>
-                <li><h4 id="sats"></h4></li>
+                    <div style="padding:16px;" class="mdc-card mdc-card--outlined">
+                        <li><h2 id="class-title"></h2></li>
+                        <li><h3 id="professor"></h3></li>
+                        <li><h3 id="class-term"></h3></li>
+                    </div>
+                    <li><div id="bar-chart"></div></li>
+                    <div style="padding:16px;" class="mdc-card mdc-card--outlined">
+                        <li><h4 id="withdraws"></h4></li>
+                        <li><h4 id="regs"></h4></li>
+                        <li><h4 id="sats"></h4></li>
+                    </div>
                 </ul>
             </div>
         </main>
+        <div class="mdc-dialog">
+            <div class="mdc-dialog__container">
+              <div class="mdc-dialog__surface"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="my-dialog-title"
+                aria-describedby="my-dialog-content">
+                <div class="mdc-dialog__content" id="my-dialog-content">
+                  Has this app been helpful to you at all? Consider following me on <a href="https://open.spotify.com/user/12134345729?si=df987741f6584369" target="_blank">Spotify</a> or <a href="https://github.com/kaibonsol" target="_blank">GitHub</a> as a thank you! If it's been astonishingly helpful consider sending a few dollars to @Kai-Bonsol on Venmo!
+                  If you're interested in seeing the source code for this (I did a really hacky job please don't judge me), it is <a href="https://github.com/kaibonsol/uicgrades" target="_blank">here</a>.  
+                </div>
+              </div>
+            </div>
+            <div class="mdc-dialog__scrim"></div>
+        </div>
         <aside class="mdc-snackbar">
             <div class="mdc-snackbar__surface" role="status" aria-relevant="additions">
               <div class="mdc-snackbar__label" aria-atomic="false">
@@ -216,6 +278,15 @@
             })
             mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'))
             var snackbar = mdc.snackbar.MDCSnackbar.attachTo(document.querySelector('.mdc-snackbar'))
+            var dialog = mdc.dialog.MDCDialog.attachTo(document.querySelector('.mdc-dialog'))
+            var circular = mdc.circularProgress.MDCCircularProgress.attachTo(document.querySelector('.mdc-circular-progress'))
+            circular.determinate = false
+            circular.close()
+
+            /* if they press the little heart */
+            document.getElementById("love").addEventListener("click", () => {
+                dialog.open()
+            })
 
             /* query logic */
             document.getElementById("search-btn").addEventListener("click", () => {
@@ -228,9 +299,14 @@
                     snackbar.labelText = "Error: You must enter a term."
                     snackbar.open()
                     return;
+                } else if (trm == "kai") {
+                    document.getElementById("kai").style.display = "block"
+                    snackbar.labelText = "kai"
+                    snackbar.open()
+                    return;
                 }
                 if (!abbrev) {
-                    snackbar.labelText = "Error: You must enter a course abbreviation."
+                    snackbar.labelText = "Error: You must enter a subject abbreviation."
                     snackbar.open()
                     return;
                 }
@@ -244,11 +320,11 @@
                     return;
                 }
                 if (/\d/.test(abbrev) || abbrev.length > 5) {
-                    snackbar.labelText = "Error: Must enter abbreviation, like CS for Computer Science."
+                    snackbar.labelText = "Error: Must enter subject abbreviation, like CS for Computer Science."
                     snackbar.open()
                     return;
                 }
-                if (num.length != 3 || isNaN(num) || num > 700 || num <= 0) {
+                if (num && (num.length != 3 || isNaN(num) || num > 700 || num <= 0)) {
                     snackbar.labelText = "Error: Course Number must be a valid 3 digit number, like 342."
                     snackbar.open()
                     return;
@@ -260,15 +336,67 @@
                 function displayResults(r, trm) {
                     // now we have access to the data
                     data = r[Object.keys(r)[0]]
-                    if (abbrev && !num) { // list department courses
-                        
+
+                    var createListItemHTML = (clss, id) => {
+                                return ""+
+                                    "<li class='mdc-list-item' id='"+id+" "+clss["CRS NBR"]+"''>"+
+                                        "<span class='mdc-list-item__ripple'></span>"+
+                                        "<span class='mdc-list-item__text'>"+
+                                            "<span class='mdc-list-item__primary-text'>" + clss["CRS SUBJ CD"] + clss["CRS NBR"] + ": " + clss["CRS TITLE"] + "</span>"+
+                                            "<span class='mdc-list-item__secondary-text'> Instructor: "+ clss["Primary Instructor"]+ "</span>"+
+                                        "</span>"+
+                                    "</li>"
+                            }
+                    if (!num) { // list department courses
+                        var list = document.querySelector(".mdc-list.mdc-list--two-line")
+                        list.innerHTML = ""
+                        document.getElementById("multiple-classes").style.display = "block"
+
+                        Object.entries(data[abbrev]).forEach(([key, val]) => {
+                            idx=0
+                            val.forEach(clss => {
+                                list.innerHTML += createListItemHTML(clss, idx)
+                                idx++
+                            })
+                        })
+
+                        // add event listeners to clear the list and load the data for the correct class
+                        document.querySelectorAll(".mdc-list-item").forEach(item => {
+                            item.addEventListener("click", () => {
+                                list.innerHTML = "";
+                                document.getElementById("multiple-classes").style.display = "none"
+                                dup = item.id.substr(0, item.id.indexOf(" "))
+                                num = item.id.substr(item.id.indexOf(" ")+1, item.id.length)
+                                drawBarChart(data[abbrev][num][dup], trm)
+                            })
+                        })
                     }
-                    else if (abbrev && num) { // if more than one, offer list, if only one, show graph
+                    else if (num) { // if more than one, offer list, if only one, show graph
                         if (data[abbrev][num] && data[abbrev][num].length == 1) {
                             console.log(data[abbrev][num])
-                            drawBarChart(data[abbrev][num][0], trm)  
-                        } else {
-                            console.log("nope")
+                            drawBarChart(data[abbrev][num][0], trm) 
+                        } else if (data[abbrev][num].length > 1){
+
+                            
+                            var list = document.querySelector(".mdc-list.mdc-list--two-line")
+                            list.innerHTML = ""
+                            document.getElementById("multiple-classes").style.display = "block"
+
+                            idx = 0
+                            data[abbrev][num].forEach(clss => {
+                                list.innerHTML += createListItemHTML(clss, idx)
+                                idx++
+                            })
+
+                            // add event listeners to clear the list and load the data for the correct class
+                            document.querySelectorAll(".mdc-list-item").forEach(item => {
+                                item.addEventListener("click", () => {
+                                    list.innerHTML = "";
+                                    document.getElementById("multiple-classes").style.display = "none"
+                                    dup = item.id.substr(0, item.id.indexOf(" "))
+                                    drawBarChart(data[abbrev][num][dup], trm)
+                                })
+                            })
                         }
                     }
                 }
@@ -285,17 +413,29 @@
                         if (r == undefined) { // we want to cache this into indexedDB for future use
                             fetch("https://kbonsol.herokuapp.com/grades?" + trm)
                                 .then(resp => {
-                                    return resp.json()
+                                    if (resp.ok) 
+                                        return resp.json()
+                                    
+                                    throw new Error('yoooo');
                                 })
                                 .then(json => {
                                     save(trm, json)
                                     console.log("succ. saved")
+                                    circular.close()
                                     displayResults(json, trm)
+                                })      
+                                .catch((error) => {
+                                    console.log(error)
+                                    snackbar.labelText = "Could not fetch data, the term may not exist yet?"
+                                    snackbar.open()
+                                    circular.close()
                                 })
                         } else { // it exists in indexedDB and we want to pull it up
+                            circular.close()
                             displayResults(r.data, trm)
                         }
                     })
+                    circular.open()
                 }
 
 
