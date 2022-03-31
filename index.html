@@ -6,6 +6,15 @@
         <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y3FV92MZ8J"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-Y3FV92MZ8J');
+        </script>
         <!--Load the AJAX API-->
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
@@ -67,7 +76,6 @@
                         bar: {groupWidth: "95%"},
                         legend: { position: "none" },
                 }
-                // TODO: I want to add it so that it calculates the proportion of each as a label when you hover
 
                 var chart = new google.visualization.ColumnChart(document.getElementById("bar-chart"))
                 chart.draw(view, options);
