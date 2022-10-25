@@ -2,10 +2,8 @@ import os
 import csv
 import json
 
-files = [f for f in os.listdir("grades")]
-print(files)
-
-
+#files = [f for f in os.listdir("grades")]
+files = ["sp22.csv", "su22.csv"]
 
 def mstrip(str):
     whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ')
