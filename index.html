@@ -516,9 +516,9 @@
                                 button.addEventListener("click", () => {
                                     dup = button.id.substr(0, button.id.indexOf(" "))
                                     const barchartPlaceholderId = "barchart " + dup + " " + num
-                                    drawBarChart(raw_data[dup], trm, barchartPlaceholder)
+                                    drawBarChart(raw_data[dup], trm, barchartPlaceholderId)
                                     const barChartDiv = document.getElementById(barchartPlaceholderId)
-                                    const previewIcon = document.getElementId("picon " + dup + " " + num)
+                                    const previewIcon = document.getElementById("picon " + dup + " " + num)
                                     if (barChartDiv.style.display === "none") {
                                         barChartDiv.style.display = "block";
                                         previewIcon.innerHTML = "expand_less";
