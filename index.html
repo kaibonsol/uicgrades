@@ -457,15 +457,16 @@
 
                 // search given these values
                 // I want to make it so you don't necessarily have to fill out every form
-                // make API calls to kbonsol.tech/grades?term
+                // make API calls to kbonsol.onrender.com/grades?term
                 // I want to store terms into indexedDB for faster lookup and to
                 // reduce stress on my free heroku app lolol
+                // 12/2022 update: heroku cancelled free plans so moving to render.com :)
 
                 if (trm) {
                     db.term.get(trm)
                     .then(r => {
                         if (r == undefined) { // we want to cache this into indexedDB for future use
-                            fetch("https://kbonsol.herokuapp.com/grades?" + trm)
+                            fetch("https://kbonsol.onrender.com/grades?" + trm)
                                 .then(resp => {
                                     if (resp.ok) 
                                         return resp.json()
