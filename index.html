@@ -485,13 +485,18 @@
                     }
                     else if (num) { // if more than one, offer list, if only one, show graph
                         var raw_data = data[abbrev][num]
+                        // reset the list
+                        var list = document.querySelector(".mdc-list.mdc-list--two-line")
+                        list.innerHTML = ""
+
                         if (raw_data && raw_data.length == 1) {
                             displayFullReport(raw_data[0], trm) 
+                            // hide back button
+                            document.getElementById("back-btn").style.display = "none";
+                            document.getElementById("multiple-classes").style.display="none";
                         } else if (raw_data.length > 1){
-
-                            
-                            var list = document.querySelector(".mdc-list.mdc-list--two-line")
-                            list.innerHTML = ""
+                            // show back button
+                            document.getElementById("back-btn").style.display = "block";
                             document.getElementById("multiple-classes").style.display = "block"
 
                             idx = 0
