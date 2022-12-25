@@ -37,7 +37,8 @@
             // Load the Visualization API and the corechart package.
             google.charts.load('current', {'packages':['corechart']})
 
-            function drawBarChart(raw_data, trm) {
+            /* render bar chart at specified ID render_At */
+            function drawBarChart(raw_data, trm, render_at) {
                 var grades = [["Grade", "Frequency", {type:'string', role: 'tooltip'}]]
                 var letters = ["F","D","C","B","A"]
                 letters.forEach(l => {
@@ -76,9 +77,12 @@
                         legend: { position: "none" },
                 }
 
-                var chart = new google.visualization.ColumnChart(document.getElementById("bar-chart"))
+                var chart = new google.visualization.ColumnChart(document.getElementById(render_at))
                 chart.draw(view, options);
+            }
 
+            function displayFullReport(raw_data, trm) {
+                drawBarChart(raw_data, trm, "bar-chart")
                 // update headings
                 document.querySelector(".data-screen ul").removeAttribute("hidden")
                 document.getElementById("info").removeAttribute("hidden")
@@ -182,7 +186,8 @@
                     <!-- ... content ... -->
                     <p><strong>Enter a term and subject abbreviation, like SP12 CS for Spring 2012 Computer Science.</strong></p>
                         <p>If you do not enter a course number, you will be given a list of classes in that subject.<br/><br/>
-                            If you do enter a course number, you will be given the grade distribution(s) of that class.
+                            If you do enter a course number, you will be given the grade distribution(s) of that class.<br><br/>
+                            If there are a list of classes to select from, there is now a <i>Preview</i> button that will allow you to drop down the grade distribution graph of that class :)
                         </p>
                         <p>The first time you search a particular term, <i>it will take a few seconds to load.</i> Every sequential query for that term will be much faster, since the data is cached in your browser.</p>
                   </div>
@@ -424,8 +429,15 @@
                                             "<span class='mdc-list-item__primary-text'>" + clss["CRS SUBJ CD"] + clss["CRS NBR"] + ": " + clss["CRS TITLE"] + "</span>"+
                                             "<span class='mdc-list-item__secondary-text'> Instructor: "+ clss["Primary Instructor"]+ "</span>"+
                                         "</span>"+
-                                    "</li>"
+                                    "</li>"+
+                                    '<button class="mdc-button mdc-button--icon-leading preview-button" id="'+id+' '+clss["CRS NBR"]+'">'+
+                                        '<span class="mdc-button__ripple"></span>'+
+                                        '<i class="material-icons mdc-button__icon"  id="picon '+id+' '+clss["CRS NBR"]+'" aria-hidden="true">expand_more</i>'+
+                                        '<span class="mdc-button__label">Preview</span>'+
+                                    '</button>'+
+                                    '<div style="width:25%;height:25%;display:none;" id="barchart '+id+' '+clss["CRS NBR"]+'"></div>';
                             }
+
                     if (!num) { // list department courses
                         var list = document.querySelector(".mdc-list.mdc-list--two-line")
                         list.innerHTML = ""
@@ -446,15 +458,35 @@
                                 document.getElementById("multiple-classes").style.display = "none"
                                 dup = item.id.substr(0, item.id.indexOf(" "))
                                 num = item.id.substr(item.id.indexOf(" ")+1, item.id.length)
-                                drawBarChart(data[abbrev][num][dup], trm)
+                                displayFullReport(data[abbrev][num][dup], trm)
+                            })
+                        })
+
+                        // add event listeners for the preview functionality, which draws/hides 
+                        // a bar chart at the correct placeholder div
+                        document.querySelectorAll(".preview-button").forEach(button => {
+                            button.addEventListener("click", () => {
+                                dup = button.id.substr(0, button.id.indexOf(" "))
+                                num = button.id.substr(button.id.indexOf(" ")+1, button.id.length)
+                                const barchartPlaceholderId = "barchart " + dup + " " + num
+                                drawBarChart(data[abbrev][num][dup], trm, barchartPlaceholderId)
+                                const barChartDiv = document.getElementById(barchartPlaceholderId)
+                                const previewIcon = document.getElementById("picon " + dup + " " + num)
+                                if (barChartDiv.style.display === "none") {
+                                    barChartDiv.style.display = "block";
+                                    previewIcon.innerHTML = "expand_less";
+                                } else {
+                                    barChartDiv.style.display = "none";
+                                    previewIcon.innerHTML = "expand_more";
+                                }
                             })
                         })
                     }
                     else if (num) { // if more than one, offer list, if only one, show graph
-                        if (data[abbrev][num] && data[abbrev][num].length == 1) {
-                            console.log(data[abbrev][num])
-                            drawBarChart(data[abbrev][num][0], trm) 
-                        } else if (data[abbrev][num].length > 1){
+                        var raw_data = data[abbrev][num]
+                        if (raw_data && raw_data.length == 1) {
+                            displayFullReport(raw_data[0], trm) 
+                        } else if (raw_data.length > 1){
 
                             
                             var list = document.querySelector(".mdc-list.mdc-list--two-line")
@@ -462,7 +494,7 @@
                             document.getElementById("multiple-classes").style.display = "block"
 
                             idx = 0
-                            data[abbrev][num].forEach(clss => {
+                            raw_data.forEach(clss => {
                                 list.innerHTML += createListItemHTML(clss, idx)
                                 idx++
                             })
@@ -473,7 +505,27 @@
                                     list.innerHTML = "";
                                     document.getElementById("multiple-classes").style.display = "none"
                                     dup = item.id.substr(0, item.id.indexOf(" "))
-                                    drawBarChart(data[abbrev][num][dup], trm)
+                                    displayFullReport(raw_data[dup], trm)
+                                })
+                            })
+
+                            // add event listeners for the preview functionality, which draws/hides 
+                            // a bar chart at the correct placeholder div
+                            document.querySelectorAll(".preview-button").forEach(button => {
+                                console.log(button)
+                                button.addEventListener("click", () => {
+                                    dup = button.id.substr(0, button.id.indexOf(" "))
+                                    const barchartPlaceholderId = "barchart " + dup + " " + num
+                                    drawBarChart(raw_data[dup], trm, barchartPlaceholder)
+                                    const barChartDiv = document.getElementById(barchartPlaceholderId)
+                                    const previewIcon = document.getElementId("picon " + dup + " " + num)
+                                    if (barChartDiv.style.display === "none") {
+                                        barChartDiv.style.display = "block";
+                                        previewIcon.innerHTML = "expand_less";
+                                    } else {
+                                        barChartDiv.style.display = "none";
+                                        previewIcon.innerHTML = "expand_more";
+                                    }
                                 })
                             })
                         }
