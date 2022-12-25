@@ -38,7 +38,6 @@
             google.charts.load('current', {'packages':['corechart']})
 
             function drawBarChart(raw_data, trm) {
-                console.log(raw_data)
                 var grades = [["Grade", "Frequency", {type:'string', role: 'tooltip'}]]
                 var letters = ["F","D","C","B","A"]
                 letters.forEach(l => {
@@ -121,6 +120,7 @@
                 withdraws.innerText = "Withdraws: " + raw_data["W"]
                 regs.innerText = "Total Registered: " + raw_data["Grade Regs"]
                 sats.innerText = "Satisfactory/Unsatisfactory: " + raw_data["S"] + "/" + raw_data["U"]
+                document.getElementById("search-btn").scrollIntoView();
             }
 
         </script>
@@ -128,6 +128,10 @@
             body {
                 margin:0;
             }
+
+            /* html {
+                scroll-behavior: smooth;
+            } */
 
             html, body {
                 height:100%;
@@ -176,10 +180,11 @@
             <div style="margin-top:5%;margin-bottom:5%;" class="data-screen">
                 <div style="padding:16px;" class="mdc-card mdc-card--outlined">
                     <!-- ... content ... -->
-                    <h3>Enter a term and subject abbreviation, like SP12 CS for Spring 2012 Computer Science.<h3>
-                        <h3>If you don't enter a course number, you will be given a list of classes in that subject;
-                            otherwise, you will be given the grade distributions of that class if it exists.
-                        </h3>
+                    <p><strong>Enter a term and subject abbreviation, like SP12 CS for Spring 2012 Computer Science.</strong></p>
+                        <p>If you do not enter a course number, you will be given a list of classes in that subject.<br/><br/>
+                            If you do enter a course number, you will be given the grade distribution(s) of that class.
+                        </p>
+                        <p>The first time you search a particular term, <i>it will take a few seconds to load.</i> Every sequential query for that term will be much faster, since the data is cached in your browser.</p>
                   </div>
 
             </div>
@@ -300,7 +305,8 @@
                 aria-labelledby="my-dialog-title"
                 aria-describedby="my-dialog-content">
                 <div class="mdc-dialog__content" id="my-dialog-content">
-                  If you're interested in seeing the source code for this (I did a really hacky job please don't judge me), it is <a href="https://github.com/kaibonsol/uicgrades" target="_blank">here</a>.  
+                  If you're interested in seeing the source code for this (I did a really hacky job please don't judge me), it is <a href="https://github.com/kaibonsol/uicgrades" title="This link opens in a new window." target="_blank">here</a>. 
+                  If you have any questions/suggestions reach out to me - kaibonsol@gmail.com 
                 </div>
               </div>
             </div>
@@ -315,7 +321,6 @@
           </aside>
         <script>
             /* initialize MDC components */
-            console.log(mdc)
             document.querySelectorAll('.mdc-text-field').forEach(el => {
                 mdc.textField.MDCTextField.attachTo(el)
             })
@@ -333,6 +338,26 @@
 
             /* query logic */
             document.getElementById("search-btn").addEventListener("click", () => {
+                // my hacky way of smooth auto scroll on search button click only
+                document.documentElement.style.scrollBehavior = "smooth";
+                handleSearch();
+                setTimeout(() => document.documentElement.style.scrollBehavior = "initial",500);
+            })
+            /* support enter press */
+            window.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") handleSearch()
+            })
+
+            /* add a back button (this is the same thing as the search button lmao */
+            const backButton = '<button class="mdc-button mdc-button--raised mdc-button--leading" id="back-btn">'+
+                                    '<span class="mdc-button__ripple"></span>'+
+                                    '<i class="material-icons mdc-button__icon" aria-hidden="true">arrow_back</i>'+
+                                    '<span class="mdc-button__label">Back</span>'+
+                                '</button>';
+            document.getElementById("info").innerHTML = backButton + document.getElementById("info").innerHTML;
+            document.getElementById("back-btn").addEventListener("click", handleSearch)
+
+            function handleSearch() {
                 var trm = document.getElementById("term").value.toLowerCase()
                 var abbrev = document.getElementById("course-abbrev").value.toUpperCase()
                 var num = document.getElementById("course-num").value
@@ -344,7 +369,7 @@
                     return;
                 } else if (trm == "kai") {
                     document.getElementById("kai").style.display = "block"
-                    snackbar.labelText = "kai"
+                    snackbar.labelText = "i love you <3"
                     snackbar.open()
                     return;
                 }
@@ -453,6 +478,7 @@
                             })
                         }
                     }
+                    document.getElementById("search-btn").scrollIntoView();
                 }
 
                 // search given these values
@@ -494,7 +520,7 @@
                 }
 
 
-            })
+            }
         </script>
     </body>
 </html>
