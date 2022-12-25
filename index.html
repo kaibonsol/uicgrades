@@ -138,6 +138,12 @@
                 overscroll-behavior: contain;
             }
 
+            .app-fab--absolute {
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+            }
+
             html, body {
                 height:100%;
                 width:100%;
@@ -287,7 +293,11 @@
                       </div>
                     </div>
                 </div>
-                
+                <button class="mdc-fab mdc-fab--extended app-fab--absolute">
+                    <div class="mdc-fab__ripple"></div>
+                    <span class="material-icons mdc-fab__icon">arrow_upward</span>
+                    <span class="mdc-fab__label">Scroll to Top</span>
+                </button>
                 <ul id="info" hidden="true">
                     <div style="padding:16px;" class="mdc-card mdc-card--outlined">
                         <li><h2 id="class-title"></h2></li>
@@ -295,7 +305,7 @@
                         <li><h3 id="class-term"></h3></li>
                     </div>
                     <li><div style="width:100%;height:100%;" id="bar-chart"></div></li>
-                    <div style="padding:16px;" class="mdc-card mdc-card--outlined">
+                    <div style="padding:16px;position:inherit;" class="mdc-card mdc-card--outlined">
                         <li><h4 id="withdraws"></h4></li>
                         <li><h4 id="regs"></h4></li>
                         <li><h4 id="sats"></h4></li>
@@ -318,13 +328,14 @@
             </div>
             <div class="mdc-dialog__scrim"></div>
         </div>
+
         <aside class="mdc-snackbar">
             <div class="mdc-snackbar__surface" role="status" aria-relevant="additions">
               <div class="mdc-snackbar__label" aria-atomic="false">
                 
               </div>
             </div>
-          </aside>
+        </aside>
         <script>
             /* initialize MDC components */
             document.querySelectorAll('.mdc-text-field').forEach(el => {
@@ -334,8 +345,36 @@
             var snackbar = mdc.snackbar.MDCSnackbar.attachTo(document.querySelector('.mdc-snackbar'))
             var dialog = mdc.dialog.MDCDialog.attachTo(document.querySelector('.mdc-dialog'))
             var circular = mdc.circularProgress.MDCCircularProgress.attachTo(document.querySelector('.mdc-circular-progress'))
+            var FAB = mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-fab'))
             circular.determinate = false
             circular.close()
+
+            /* handler for scroll to top button - copied straight from https://www.w3schools.com/howto/howto_js_scroll_to_top.asp*/
+            // Get the button:
+            let mybutton = document.querySelector('.mdc-fab');
+
+            // When the user scrolls down 20px from the top of the document, show the button
+            window.onscroll = function() {scrollFunction()};
+            window.onload = function() {scrollFunction()};
+
+            function scrollFunction() {
+                if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
+                    mybutton.style.display = "inline-flex";
+                } else {
+                    mybutton.style.display = "none";
+                }
+            }
+
+            // When the user clicks on the button, scroll to the top of the document
+            function topFunction() {
+                // my hacky way of smooth auto scroll on search button click only
+                document.documentElement.style.scrollBehavior = "smooth";
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+                setTimeout(() => document.documentElement.style.scrollBehavior = "initial",500);
+            }
+
+            mybutton.addEventListener("click", topFunction)
 
             /* if they press the little heart */
             document.getElementById("love").addEventListener("click", () => {
