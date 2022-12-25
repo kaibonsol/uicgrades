@@ -133,9 +133,10 @@
                 margin:0;
             }
 
-            /* html {
-                scroll-behavior: smooth;
-            } */
+            html {
+                margin-bottom:200px;
+                overscroll-behavior: contain;
+            }
 
             html, body {
                 height:100%;
@@ -512,7 +513,6 @@
                             // add event listeners for the preview functionality, which draws/hides 
                             // a bar chart at the correct placeholder div
                             document.querySelectorAll(".preview-button").forEach(button => {
-                                console.log(button)
                                 button.addEventListener("click", () => {
                                     dup = button.id.substr(0, button.id.indexOf(" "))
                                     const barchartPlaceholderId = "barchart " + dup + " " + num
